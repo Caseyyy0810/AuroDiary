@@ -1,22 +1,19 @@
 import { Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, HeadingLevel } from 'docx';
 import fs from 'fs';
 import path from 'path';
-import exifr from 'exifr';
+import sizeOf from 'image-size'; // 使用更稳定的尺寸识别工具
 
 export async function generateDocx({ title, date, location, content, photos, uploadsDir }) {
   console.log('开始生成 Word 文档...', { title, photosCount: photos?.length });
   
   try {
-    // 1. 准备所有段落内容
     const children = [
-      // 标题
       new Paragraph({
         text: title || '无标题',
         heading: HeadingLevel.HEADING_1,
         alignment: AlignmentType.CENTER,
         spacing: { after: 200 },
       }),
-      // 元数据
       new Paragraph({
         alignment: AlignmentType.CENTER,
         children: [
@@ -28,7 +25,6 @@ export async function generateDocx({ title, date, location, content, photos, upl
       }),
     ];
 
-    // 2. 解析正文并插入图片
     if (content) {
       const parts = content.split(/(\[图片\d+\])/g);
 
@@ -46,35 +42,25 @@ export async function generateDocx({ title, date, location, content, photos, upl
               try {
                 const imageBuffer = fs.readFileSync(localPath);
                 
-                // 获取图片原始尺寸以计算比例，防止变形
-                let finalWidth = 400; // 默认宽度
-                let finalHeight = 300; // 默认高度
+                // --- 核心修复：精准计算比例 ---
+                const dimensions = sizeOf(localPath);
+                const originalWidth = dimensions.width || 400;
+                const originalHeight = dimensions.height || 300;
                 
-                try {
-                  // 尝试获取尺寸数据
-                  const dims = await exifr.parse(localPath, true);
-                  
-                  // exifr 在某些格式下返回不同的字段，我们要多方检查
-                  const originalWidth = dims?.ExifImageWidth || dims?.PixelXDimension || dims?.ImageWidth || 0;
-                  const originalHeight = dims?.ExifImageHeight || dims?.PixelYDimension || dims?.ImageHeight || 0;
-                  
-                  if (originalWidth > 0 && originalHeight > 0) {
-                    const ratio = originalHeight / originalWidth;
-                    // 以 Word 页面常用宽度 450 为基准
-                    finalWidth = 450;
-                    finalHeight = Math.round(finalWidth * ratio);
-                    
-                    // 如果高度太夸张（比如超长手机截图），进行二次限制
-                    if (finalHeight > 600) {
-                      finalHeight = 600;
-                      finalWidth = Math.round(finalHeight / ratio);
-                    }
-                  }
-                  console.log(`图片尺寸识别成功: ${originalWidth}x${originalHeight} -> 适配为: ${finalWidth}x${finalHeight}`);
-                } catch (sizeErr) {
-                  console.warn('获取图片尺寸失败，使用默认大小:', sizeErr.message);
-                  // 失败了保持 400x300 的默认值，保证图片不消失
+                // 计算比例
+                const ratio = originalHeight / originalWidth;
+                
+                // Word 页面标准宽度约为 450 磅 (Points)
+                let finalWidth = 450;
+                let finalHeight = Math.round(finalWidth * ratio);
+                
+                // 如果高度过长，进行等比例限制
+                if (finalHeight > 600) {
+                  finalHeight = 600;
+                  finalWidth = Math.round(finalHeight / ratio);
                 }
+
+                console.log(`Word图片适配: ${originalWidth}x${originalHeight} -> ${finalWidth}x${finalHeight} (比例保持不变)`);
 
                 children.push(
                   new Paragraph({
@@ -91,6 +77,56 @@ export async function generateDocx({ title, date, location, content, photos, upl
                     spacing: { before: 200, after: 100 },
                   })
                 );
+                // --- 修复结束 ---
+
+                if (photo.location) {
+                  children.push(
+                    new Paragraph({
+                      alignment: AlignmentType.CENTER,
+                      children: [
+                        new TextRun({ text: `📍 ${photo.location}`, size: 20, color: "4fc3f7" }),
+                      ],
+                      spacing: { after: 200 },
+                    })
+                  );
+                }
+              } catch (err) {
+                console.error('Word插入图片失败:', err);
+              }
+            }
+          }
+        } else if (part.trim()) {
+          const lines = part.split('\n');
+          for (const line of lines) {
+            if (line.trim()) {
+              children.push(
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: line.trim(), size: 28 }),
+                  ],
+                  spacing: { after: 150 },
+                })
+              );
+            }
+          }
+        }
+      }
+    }
+
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: children,
+      }],
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    return buffer;
+  } catch (err) {
+    console.error('docxGenerator 内部错误:', err);
+    throw err;
+  }
+}
                 if (photo.location) {
                   children.push(
                     new Paragraph({
