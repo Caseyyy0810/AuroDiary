@@ -602,6 +602,46 @@ body {
   color: #4fc3f7;
 }
 
+/* 模式切换器 */
+.mode-selector {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: #a0aec0;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.mode-btn.active {
+  background: rgba(127, 90, 240, 0.2);
+  color: #fff;
+  box-shadow: 0 0 15px rgba(127, 90, 240, 0.3);
+  border: 1px solid rgba(127, 90, 240, 0.4);
+}
+
+.error-message {
+  color: #ff4d4d;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 10px;
+  background: rgba(255, 77, 77, 0.1);
+  padding: 8px;
+  border-radius: 8px;
+}
+
 /* 适配手机 */
 @media (max-width: 480px) {
   .app {
