@@ -642,6 +642,23 @@ body {
   border-radius: 8px;
 }
 
+.submit-group {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.polish-btn {
+  background: rgba(127, 90, 240, 0.1) !important;
+  border: 1px solid #7f5af0 !important;
+  color: #7f5af0 !important;
+  margin-top: 10px !important;
+}
+
+.polish-btn:hover {
+  background: rgba(127, 90, 240, 0.2) !important;
+}
+
 /* 适配手机 */
 @media (max-width: 480px) {
   .app {

@@ -17,17 +17,15 @@ function App() {
   const [location, setLocation] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]); 
   const [description, setDescription] = useState('');
-  const [writeMode, setWriteMode] = useState('ai'); // 'ai' 或 'manual'
-  const [manualTitle, setManualTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [diary, setDiary] = useState(null);
   const [error, setError] = useState('');
   const [diaryStyle, setDiaryStyle] = useState(DIARY_STYLES[0].title); 
-  // 新增：创作模式 ai(AI润色) 或 manual(手动创作)
+  // 创作模式 ai(AI润色) 或 manual(手动创作)
   const [mode, setMode] = useState('ai');
   const [manualTitle, setManualTitle] = useState('');
   
-  const [currentInput, setCurrentInput] = useState({ photos: [], location: '', date: new Date().toISOString().split('T')[0], description: '', diaryStyle: DIARY_STYLES[0].title });
+  const [currentInput, setCurrentInput] = useState({ photos: [], location: '', date: new Date().toISOString().split('T')[0], description: '', diaryStyle: DIARY_STYLES[0].title, mode: 'ai', title: '' });
 
   const [isEditingDiary, setIsEditingDiary] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
@@ -151,11 +149,11 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!description.trim()) {
-      setError(writeMode === 'ai' ? '请输入需要润色的内容' : '请输入日记正文');
+      setError(mode === 'ai' ? '请输入需要润色的内容' : '请输入日记正文');
       return;
     }
 
-    if (writeMode === 'manual') {
+    if (mode === 'manual') {
       // 手动模式：先上传照片，然后直接设置日记状态
       setLoading(true);
       try {
@@ -508,9 +506,22 @@ function App() {
 
           {error && <div className="error-message">{error}</div>}
 
-          <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? (mode === 'ai' ? '润色中...' : '处理中...') : (mode === 'ai' ? '✨ 开始润色' : '✅ 完成日记')}
-          </button>
+          <div className="submit-group">
+            <button type="submit" disabled={loading} className="submit-btn flex-2">
+              {loading ? (mode === 'ai' ? '处理中...' : '提交中...') : (mode === 'ai' ? '✨ 开始生成' : '✅ 预览日记')}
+            </button>
+            {mode === 'manual' && (
+              <button 
+                type="button" 
+                onClick={handlePolish} 
+                disabled={loading || !description.trim()} 
+                className="action-btn polish-btn flex-1"
+                style={{ marginTop: '10px' }}
+              >
+                🪄 AI 润色
+              </button>
+            )}
+          </div>
         </form>
       ) : (
         <div className="diary-result">

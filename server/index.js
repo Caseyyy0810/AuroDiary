@@ -84,10 +84,10 @@ const upload = multer({ dest: os.tmpdir() });
 // 生成日记接口
 app.post('/api/generate-diary', upload.array('photos', 10), async (req, res) => {
   try {
-    const { location, date, description, diaryStyle, styleDescription } = req.body;
+    const { location, date, description, diaryStyle, styleDescription, mode, title } = req.body;
     const files = req.files || [];
 
-    console.log(`收到生成请求: 风格=${diaryStyle}, 地点=${location}`);
+    console.log(`收到生成请求: 模式=${mode}, 风格=${diaryStyle}, 地点=${location}`);
 
     // 处理图片并移动到持久目录
     const photosWithLocation = await Promise.all(
@@ -113,7 +113,9 @@ app.post('/api/generate-diary', upload.array('photos', 10), async (req, res) => 
       description,
       photos: photosWithLocation,
       diaryStyle: diaryStyle || '游记',
-      styleDescription: styleDescription || ''
+      styleDescription: styleDescription || '',
+      mode: mode || 'ai',
+      title: title || ''
     });
 
     res.json({
