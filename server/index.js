@@ -15,8 +15,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// 适配云平台端口：优先使用 process.env.PORT
-const PORT = process.env.PORT || 3001;
+// 适配云平台端口：优先使用 process.env.PORT，默认使用 8080
+const PORT = process.env.PORT || 8080;
 
 console.log('正在启动服务器...');
 console.log('当前运行目录:', __dirname);
