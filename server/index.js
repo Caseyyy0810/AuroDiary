@@ -22,14 +22,17 @@ const PORT = process.env.PORT || 8080;
 console.log('正在启动服务器...');
 console.log('当前运行目录:', __dirname);
 
-// 确保上传目录存在（在云端建议使用 /tmp 或持久化卷，这里先保持本地）
-const uploadsDir = path.join(__dirname, '../uploads');
+// 适配云平台环境：优先使用 /tmp 目录作为上传目录，因为云端根目录通常只读
+const uploadsDir = process.env.NODE_ENV === 'production' 
+  ? path.join(os.tmpdir(), 'aurodiary_uploads')
+  : path.join(__dirname, '../uploads');
+
 if (!fs.existsSync(uploadsDir)) {
   try {
     fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('成功创建上传目录:', uploadsDir);
+    console.log('✅ 成功创建上传目录:', uploadsDir);
   } catch (err) {
-    console.error('创建上传目录失败:', err);
+    console.error('❌ 创建上传目录失败:', err);
   }
 }
 
@@ -141,18 +144,34 @@ app.post('/api/save-to-feishu', async (req, res) => {
   }
 });
 
-// 静态文件服务
-const distPath = path.join(__dirname, '../dist');
-if (fs.existsSync(distPath)) {
+// 静态文件服务 - 增加更多路径检查以适配 Render 环境
+const possibleDistPaths = [
+  path.join(__dirname, '../dist'),
+  path.join(process.cwd(), 'dist'),
+  path.join(process.cwd(), 'src/dist')
+];
+
+let distPath = '';
+for (const p of possibleDistPaths) {
+  if (fs.existsSync(p)) {
+    distPath = p;
+    break;
+  }
+}
+
+if (distPath) {
+  console.log('✅ 找到静态文件目录:', distPath);
   app.use(express.static(distPath));
   app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
+    // 只有非 API 请求才返回 index.html
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
       res.sendFile(path.join(distPath, 'index.html'));
     }
   });
-  console.log('已启用前端静态文件托管');
 } else {
-  console.warn('警告: dist 目录不存在，前端页面将无法访问。请确保运行了 npm run build');
+  console.error('❌ 错误: 找不到 dist 目录。请确保已执行 npm run build');
+  console.log('当前目录:', process.cwd());
+  console.log('当前目录下文件:', fs.readdirSync(process.cwd()));
 }
 
 app.listen(PORT, '0.0.0.0', () => {
