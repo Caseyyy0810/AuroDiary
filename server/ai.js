@@ -123,4 +123,3 @@ ${photos.length > 0 ? `照片信息：${photosDescription}` : ''}
     throw new Error(errorMessage);
   }
 }
-}

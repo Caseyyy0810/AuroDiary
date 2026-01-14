@@ -17,15 +17,13 @@ function App() {
   const [location, setLocation] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]); 
   const [description, setDescription] = useState('');
+  const [manualTitle, setManualTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [diary, setDiary] = useState(null);
   const [error, setError] = useState('');
   const [diaryStyle, setDiaryStyle] = useState(DIARY_STYLES[0].title); 
-  // 创作模式 ai(AI润色) 或 manual(手动创作)
-  const [mode, setMode] = useState('ai');
-  const [manualTitle, setManualTitle] = useState('');
   
-  const [currentInput, setCurrentInput] = useState({ photos: [], location: '', date: new Date().toISOString().split('T')[0], description: '', diaryStyle: DIARY_STYLES[0].title, mode: 'ai', title: '' });
+  const [currentInput, setCurrentInput] = useState({ photos: [], location: '', date: new Date().toISOString().split('T')[0], description: '', diaryStyle: DIARY_STYLES[0].title, title: '' });
 
   const [isEditingDiary, setIsEditingDiary] = useState(false);
   const [editableTitle, setEditableTitle] = useState('');
@@ -147,62 +145,58 @@ function App() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!description.trim()) {
-      setError(mode === 'ai' ? '请输入需要润色的内容' : '请输入日记正文');
+      setError('请输入需要润色的内容或日记正文');
       return;
     }
 
-    if (mode === 'manual') {
-      // 手动模式：先上传照片，然后直接设置日记状态
-      setLoading(true);
-      try {
-        let uploadedPhotos = [];
-        // 如果有新照片，需要上传
-        const newPhotosToUpload = photos.filter(p => p.file instanceof File);
-        
-        if (newPhotosToUpload.length > 0) {
-          const formData = new FormData();
-          newPhotosToUpload.forEach(p => {
-            formData.append('photos', p.file);
-          });
-          formData.append('location', location);
-          
-          const res = await fetch('/api/upload-photos', {
-            method: 'POST',
-            body: formData
-          });
-          const data = await res.json();
-          if (data.success) {
-            uploadedPhotos = data.photos;
-          }
-        }
-
-        const newDiary = {
-          title: manualTitle || `${date} 的日记`,
-          location: location || '未指定地点',
-          date: date,
-          content: description,
-          photos: uploadedPhotos
-        };
-        setDiary(newDiary);
-      } catch (err) {
-        setError('处理失败，请重试');
-      } finally {
-        setLoading(false);
-      }
-    } else {
-      // AI 助手模式 (润色或生成)
-      generateDiaryEntry(photos, location, date, description, diaryStyle, 'ai');
-    }
+    // AI 助手模式 (默认生成)
+    generateDiaryEntry(photos, location, date, description, diaryStyle, 'ai');
   };
 
-  const handlePolish = async () => {
+  const handleDirectFinish = async () => {
     if (!description.trim()) {
-      alert('请先输入日记内容再进行润色');
+      setError('请输入日记内容');
       return;
     }
-    generateDiaryEntry(photos, location, date, description, diaryStyle, 'polish', manualTitle);
+    
+    setLoading(true);
+    try {
+      let uploadedPhotos = [];
+      // 如果有新照片，需要上传
+      const newPhotosToUpload = photos.filter(p => p.file instanceof File);
+      
+      if (newPhotosToUpload.length > 0) {
+        const formData = new FormData();
+        newPhotosToUpload.forEach(p => {
+          formData.append('photos', p.file);
+        });
+        formData.append('location', location);
+        
+        const res = await fetch('/api/upload-photos', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          uploadedPhotos = data.photos;
+        }
+      }
+
+      const newDiary = {
+        title: manualTitle || `${date} 的日记`,
+        location: location || '未指定地点',
+        date: date,
+        content: description,
+        photos: uploadedPhotos
+      };
+      setDiary(newDiary);
+    } catch (err) {
+      setError('处理失败，请重试');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegenerate = () => {
@@ -389,36 +383,17 @@ function App() {
       ) : !diary ? (
         <form className="form" onSubmit={handleSubmit}>
           
-          <div className="mode-selector">
-            <button 
-              type="button" 
-              className={`mode-btn ${mode === 'ai' ? 'active' : ''}`}
-              onClick={() => setMode('ai')}
-            >
-              🪄 AI 润色模式
-            </button>
-            <button 
-              type="button" 
-              className={`mode-btn ${mode === 'manual' ? 'active' : ''}`}
-              onClick={() => setMode('manual')}
-            >
-              ✍️ 自由创作模式
-            </button>
-          </div>
-
           <div className="form-row">
-            {mode === 'ai' && (
-              <div className="form-group flex-1">
-                <label className="label">✨ 风格</label>
-                <select value={diaryStyle} onChange={(e) => setDiaryStyle(e.target.value)} className="input compact-input">
-                  {DIARY_STYLES.map(style => (
-                    <option key={style.title} value={style.title}>{style.title}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="form-group flex-1">
+              <label className="label">✨ 风格</label>
+              <select value={diaryStyle} onChange={(e) => setDiaryStyle(e.target.value)} className="input compact-input">
+                {DIARY_STYLES.map(style => (
+                  <option key={style.title} value={style.title}>{style.title}</option>
+                ))}
+              </select>
+            </div>
 
-            <div className={`form-group ${mode === 'ai' ? 'flex-2' : 'flex-1'}`}>
+            <div className="form-group flex-2">
               <label className="label">📍 地点</label>
               <div className="location-input-container">
                 <input
@@ -445,24 +420,20 @@ function App() {
             </div>
           </div>
 
-          {mode === 'ai' && (
-            <p className="style-tip">
-              {DIARY_STYLES.find(s => s.title === diaryStyle)?.description}
-            </p>
-          )}
+          <p className="style-tip">
+            {DIARY_STYLES.find(s => s.title === diaryStyle)?.description}
+          </p>
 
-          {mode === 'manual' && (
-            <div className="form-group">
-              <label className="label">🔖 日记标题</label>
-              <input
-                type="text"
-                placeholder="给日记起个标题吧..."
-                value={manualTitle}
-                onChange={(e) => setManualTitle(e.target.value)}
-                className="input"
-              />
-            </div>
-          )}
+          <div className="form-group">
+            <label className="label">🔖 日记标题（可选）</label>
+            <input
+              type="text"
+              placeholder="给日记起个标题吧..."
+              value={manualTitle}
+              onChange={(e) => setManualTitle(e.target.value)}
+              className="input"
+            />
+          </div>
 
           <div className="form-group">
             <label className="label">📸 上传照片（可选）</label>
@@ -491,13 +462,11 @@ function App() {
           </div>
 
           <div className="form-group">
-            <label className="label">
-              {mode === 'ai' ? '📝 想要润色的内容' : '✍️ 日记正文'}
-            </label>
+            <label className="label">✍️ 日记内容</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={mode === 'ai' ? "随便写写，AI 帮你润色成精美的日记..." : "在这里写下你的故事..."}
+              placeholder="写下你的故事，或者输入关键词让 AI 帮你生成..."
               className="textarea"
               rows="6"
               required
@@ -508,19 +477,17 @@ function App() {
 
           <div className="submit-group">
             <button type="submit" disabled={loading} className="submit-btn flex-2">
-              {loading ? (mode === 'ai' ? '处理中...' : '提交中...') : (mode === 'ai' ? '✨ 开始生成' : '✅ 预览日记')}
+              {loading ? '正在生成...' : '🪄 AI 生成/润色'}
             </button>
-            {mode === 'manual' && (
-              <button 
-                type="button" 
-                onClick={handlePolish} 
-                disabled={loading || !description.trim()} 
-                className="action-btn polish-btn flex-1"
-                style={{ marginTop: '10px' }}
-              >
-                🪄 AI 润色
-              </button>
-            )}
+            <button 
+              type="button" 
+              onClick={handleDirectFinish} 
+              disabled={loading || !description.trim()} 
+              className="action-btn direct-finish-btn flex-1"
+              style={{ marginTop: '10px' }}
+            >
+              ✅ 直接完成
+            </button>
           </div>
         </form>
       ) : (
