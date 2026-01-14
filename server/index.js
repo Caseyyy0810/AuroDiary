@@ -4,6 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import os from 'os';
 import dotenv from 'dotenv';
 import { generateDiary } from './ai.js';
 import { extractLocationFromImage } from './imageProcessor.js';
@@ -43,7 +44,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // 单独的图片上传接口
-app.post('/api/upload-photos', multer({ dest: '/tmp/' }).array('photos', 10), async (req, res) => {
+app.post('/api/upload-photos', multer({ dest: os.tmpdir() }).array('photos', 10), async (req, res) => {
   try {
     const photos = req.files || [];
     const { location: defaultLocation } = req.body;
@@ -52,10 +53,11 @@ app.post('/api/upload-photos', multer({ dest: '/tmp/' }).array('photos', 10), as
       photos.map(async (photo) => {
         const detectedLocation = await extractLocationFromImage(photo.path);
         
-        // 云端临时处理：将文件移动到 uploads 目录（简单实现）
-        const finalName = Date.now() + '-' + photo.originalname;
+        // 云端临时处理：将文件复制到 uploads 目录（使用 copyFileSync + unlinkSync 避免跨分区移动失败）
+        const finalName = Date.now() + '-' + photo.originalname.replace(/\s+/g, '_');
         const finalPath = path.join(uploadsDir, finalName);
-        fs.renameSync(photo.path, finalPath);
+        fs.copyFileSync(photo.path, finalPath);
+        fs.unlinkSync(photo.path);
 
         return {
           filename: finalName,
@@ -74,7 +76,7 @@ app.post('/api/upload-photos', multer({ dest: '/tmp/' }).array('photos', 10), as
 });
 
 // 配置 multer 用于生成接口
-const upload = multer({ dest: '/tmp/' });
+const upload = multer({ dest: os.tmpdir() });
 
 // 生成日记接口
 app.post('/api/generate-diary', upload.array('photos', 10), async (req, res) => {
@@ -88,9 +90,10 @@ app.post('/api/generate-diary', upload.array('photos', 10), async (req, res) => 
     const photosWithLocation = await Promise.all(
       files.map(async (file) => {
         const detectedLocation = await extractLocationFromImage(file.path);
-        const finalName = Date.now() + '-' + file.originalname;
+        const finalName = Date.now() + '-' + file.originalname.replace(/\s+/g, '_');
         const finalPath = path.join(uploadsDir, finalName);
-        fs.renameSync(file.path, finalPath);
+        fs.copyFileSync(file.path, finalPath);
+        fs.unlinkSync(file.path);
         
         return {
           filename: finalName,
