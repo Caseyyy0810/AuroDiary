@@ -1,0 +1,612 @@
+/* 基础样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: #050a18 url('https://img.js.design/assets/static/7ba8006cdbc0ca0be00f68a948387fcc.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #e0e6ed;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 10px;
+}
+
+.app {
+  width: 100%;
+  max-width: 500px;
+  background: rgba(13, 20, 38, 0.85);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(74, 144, 226, 0.1);
+}
+
+/* 顶部标题区域 */
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 28px;
+  color: #fff;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.subtitle {
+  color: #a0aec0;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* 表单元素 */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #cbd5e0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.file-input {
+  display: none;
+}
+
+/* 输入框样式 */
+.input, .textarea, select.input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 12px 15px;
+  color: #fff;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.input:focus, .textarea:focus {
+  outline: none;
+  border-color: #7f5af0;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(127, 90, 240, 0.3);
+}
+
+/* 表单行排列 */
+.form-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 5px;
+}
+
+.flex-1 { flex: 1; }
+.flex-1.5 { flex: 1.5; min-width: 0; }
+.flex-2 { flex: 2; min-width: 0; }
+
+.compact-input {
+  padding: 8px 10px !important;
+  font-size: 13px !important;
+}
+
+.compact-btn {
+  padding: 0 8px !important;
+  min-width: 36px;
+}
+
+/* 风格描述小贴士 */
+.style-tip {
+  font-size: 12px;
+  color: #94a3b8;
+  background: rgba(127, 90, 240, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border-left: 3px solid #7f5af0;
+  margin-top: -10px; /* 向上移动一点，靠近风格选择 */
+  margin-bottom: 10px;
+}
+
+/* 按钮样式 - 霓虹渐变 */
+.submit-btn, .action-btn.regenerate-btn {
+  background: linear-gradient(90deg, #7f5af0, #4fc3f7);
+  color: #fff;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(127, 90, 240, 0.4);
+  margin-top: 10px;
+}
+
+.submit-btn:hover, .action-btn.regenerate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(127, 90, 240, 0.6);
+}
+
+.submit-btn:disabled {
+  background: #2d3748;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* 照片选择按钮 */
+.file-input-label {
+  background: linear-gradient(90deg, rgba(127, 90, 240, 0.2), rgba(79, 195, 247, 0.2));
+  border: 1px dashed rgba(127, 90, 240, 0.5);
+  color: #fff;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.file-input-label:hover {
+  background: rgba(127, 90, 240, 0.3);
+}
+
+/* 照片预览网格 */
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-photo-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  background: rgba(231, 76, 60, 0.8);
+  border-radius: 50%;
+  border: none;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* 地点与定位按钮 */
+.location-input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.get-location-btn {
+  background: rgba(45, 55, 72, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #4fc3f7;
+  padding: 0 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.get-location-btn:hover {
+  background: rgba(79, 195, 247, 0.1);
+  border-color: #4fc3f7;
+}
+
+/* 日记结果页面 */
+.diary-result {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.diary-content {
+  background: rgba(13, 20, 38, 0.6);
+  padding: 25px;
+  border-radius: 15px;
+  border: 1px solid rgba(127, 90, 240, 0.2);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.diary-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 15px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(127, 90, 240, 0.5);
+}
+
+.diary-location {
+  color: #a0aec0;
+  font-size: 13px;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.diary-location span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.diary-paragraph {
+  margin-bottom: 15px;
+  line-height: 1.8;
+  color: #e2e8f0;
+  text-align: justify;
+}
+
+.diary-photo-in-text-item {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.diary-photo-in-text {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.photo-location {
+  font-size: 12px;
+  color: #4fc3f7; /* 使用青色，提高辨识度 */
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-shadow: 0 0 5px rgba(79, 195, 247, 0.3);
+}
+
+/* 底部操作按钮 */
+.diary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.action-btn {
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.edit-btn { 
+  background: rgba(255, 255, 255, 0.05); 
+  color: #fff; 
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.edit-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #4fc3f7;
+}
+
+.save-btn { 
+  background: linear-gradient(90deg, #2ecc71, #27ae60); 
+  color: #fff; 
+  border: none;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.cancel-btn { 
+  background: rgba(231, 76, 60, 0.1); 
+  color: #e74c3c; 
+  border: 1px solid rgba(231, 76, 60, 0.3); 
+}
+
+.reset-btn { 
+  background: rgba(148, 163, 184, 0.1); 
+  color: #cbd5e0; 
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feishu-btn {
+  background: #3370ff;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(51, 112, 255, 0.3);
+  width: 100%;
+  margin-top: 5px;
+}
+
+.feishu-btn:hover {
+  background: #1e56e0;
+  transform: translateY(-2px);
+}
+
+.download-btn {
+  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.download-btn:hover {
+  background: linear-gradient(90deg, #e082eb 0%, #e44659 100%);
+  transform: translateY(-2px);
+}
+
+.save-status {
+  font-size: 13px;
+  text-align: center;
+  margin-top: 5px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.reset-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+  color: #fff;
+}
+
+/* 重新生成风格选择器 */
+.regenerate-style-selector {
+  background: rgba(127, 90, 240, 0.05);
+  border: 1px solid rgba(127, 90, 240, 0.2);
+  border-radius: 10px;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.regenerate-style-selector .label {
+  font-size: 13px;
+  color: #a0aec0;
+  white-space: nowrap;
+}
+
+.result-style-select {
+  flex: 1;
+  max-width: 150px;
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(127, 90, 240, 0.3) !important;
+}
+
+/* 加载动画 */
+.loading-container {
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* 编辑模式额外样式 */
+.diary-title-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #7f5af0;
+  border-radius: 10px;
+  padding: 10px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 15px;
+  outline: none;
+  box-shadow: 0 0 10px rgba(127, 90, 240, 0.2);
+}
+
+.diary-content-textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  color: #e2e8f0;
+  font-size: 15px;
+  line-height: 1.8;
+  resize: vertical;
+  min-height: 300px;
+  outline: none;
+  font-family: inherit;
+}
+
+.diary-content-textarea:focus {
+  border-color: #7f5af0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.edit-photos-section {
+  margin-top: 25px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.edit-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.edit-photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.edit-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-index-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 10px;
+  text-align: center;
+  padding: 2px 0;
+}
+
+.remove-edit-photo-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.add-photo-edit-btn {
+  aspect-ratio: 1;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-photo-edit-btn:hover {
+  border-color: #4fc3f7;
+  color: #4fc3f7;
+  background: rgba(79, 195, 247, 0.1);
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #fff;
+  border-bottom-color: #7f5af0;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 编辑模式额外样式 */
+.edit-photos-section {
+  margin-top: 25px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.add-photo-edit-btn {
+  aspect-ratio: 1;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.add-photo-edit-btn:hover {
+  border-color: #4fc3f7;
+  color: #4fc3f7;
+}
+
+/* 适配手机 */
+@media (max-width: 480px) {
+  .app {
+    padding: 20px 15px;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+}
