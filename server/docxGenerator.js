@@ -1,6 +1,7 @@
 import { Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, HeadingLevel } from 'docx';
 import fs from 'fs';
 import path from 'path';
+import exifr from 'exifr';
 
 export async function generateDocx({ title, date, location, content, photos, uploadsDir }) {
   console.log('开始生成 Word 文档...', { title, photosCount: photos?.length });
@@ -37,46 +38,78 @@ export async function generateDocx({ title, date, location, content, photos, upl
           const photoIndex = parseInt(photoMatch[1], 10) - 1;
           const photo = photos && photos[photoIndex];
           
-            if (photo && photo.path) {
-              const fileName = path.basename(photo.path);
-              const localPath = path.join(uploadsDir, fileName);
+          if (photo && photo.path) {
+            const fileName = path.basename(photo.path);
+            const localPath = path.join(uploadsDir, fileName);
 
-              if (fs.existsSync(localPath)) {
+            if (fs.existsSync(localPath)) {
+              try {
+                const imageBuffer = fs.readFileSync(localPath);
+                
+                // 获取图片原始尺寸以计算比例，防止变形
+                let width = 450; // 默认宽度
+                let height = 300; // 默认高度
+                
                 try {
-                  const imageBuffer = fs.readFileSync(localPath);
+                  const dims = await exifr.parse(localPath, [
+                    'PixelXDimension', 
+                    'PixelYDimension', 
+                    'ExifImageWidth', 
+                    'ExifImageHeight'
+                  ]);
+                  
+                  const originalWidth = dims?.PixelXDimension || dims?.ExifImageWidth || 0;
+                  const originalHeight = dims?.PixelYDimension || dims?.ExifImageHeight || 0;
+                  
+                  if (originalWidth && originalHeight) {
+                    const ratio = originalHeight / originalWidth;
+                    // 以最大宽度 450px 为基准
+                    width = 450;
+                    height = Math.round(width * ratio);
+                    
+                    // 如果高度太长（比如竖屏长图），限制一下高度
+                    if (height > 600) {
+                      height = 600;
+                      width = Math.round(height / ratio);
+                    }
+                  }
+                } catch (sizeErr) {
+                  console.warn('获取图片尺寸失败，使用默认大小:', sizeErr);
+                }
+
+                children.push(
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new ImageRun({
+                        data: imageBuffer,
+                        transformation: {
+                          width: width,
+                          height: height,
+                        },
+                      }),
+                    ],
+                    spacing: { before: 200, after: 100 },
+                  })
+                );
+                if (photo.location) {
                   children.push(
                     new Paragraph({
                       alignment: AlignmentType.CENTER,
                       children: [
-                        new ImageRun({
-                          data: imageBuffer,
-                          transformation: {
-                            width: 400,
-                            height: 300,
-                          },
-                        }),
+                        new TextRun({ text: `📍 ${photo.location}`, size: 20, color: "4fc3f7" }),
                       ],
-                      spacing: { before: 200, after: 100 },
+                      spacing: { after: 200 },
                     })
                   );
-                  if (photo.location) {
-                    children.push(
-                      new Paragraph({
-                        alignment: AlignmentType.CENTER,
-                        children: [
-                          new TextRun({ text: `📍 ${photo.location}`, size: 20, color: "4fc3f7" }),
-                        ],
-                        spacing: { after: 200 },
-                      })
-                    );
-                  }
-                } catch (err) {
-                  console.error('Word插入图片失败:', err);
                 }
-              } else {
-                console.warn('Word生成：图片文件不存在:', localPath);
+              } catch (err) {
+                console.error('Word插入图片失败:', err);
               }
+            } else {
+              console.warn('Word生成：图片文件不存在:', localPath);
             }
+          }
         } else if (part.trim()) {
           const lines = part.split('\n');
           for (const line of lines) {
