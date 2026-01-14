@@ -401,6 +401,18 @@ body {
   transform: translateY(-2px);
 }
 
+.word-btn {
+  background: linear-gradient(90deg, #2b5876 0%, #4e4376 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 15px rgba(43, 88, 118, 0.3);
+}
+
+.word-btn:hover {
+  background: linear-gradient(90deg, #1e3c50 0%, #362f52 100%);
+  transform: translateY(-2px);
+}
+
 .save-status {
   font-size: 13px;
   text-align: center;

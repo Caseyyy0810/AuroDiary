@@ -351,6 +351,54 @@ function App() {
     }
   };
 
+  const handleDownloadDocx = async () => {
+    if (!diary) return;
+    
+    setSaveStatus('正在生成 Word 文档...');
+    try {
+      const response = await fetch('/api/download-docx', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: diary.title,
+          date: diary.date,
+          location: diary.location,
+          content: diary.content,
+          photos: diary.photos
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '生成 Word 失败');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      const safeTitle = (diary.title || '日记').replace(/[\\/:*?"<>|]/g, '_');
+      link.download = `${safeTitle}-${diary.date}.docx`;
+      
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 100);
+      
+      setSaveStatus('✅ Word 文档已导出！微信中可直接通过“更多-用其他应用打开”分享');
+      setTimeout(() => setSaveStatus(''), 5000);
+    } catch (err) {
+      console.error('导出 Word 失败:', err);
+      setSaveStatus('❌ 导出 Word 失败');
+      setTimeout(() => setSaveStatus(''), 3000);
+    }
+  };
+
   const handleReset = () => {
     photos.forEach(photo => {
       if (photo.file instanceof File && photo.preview) {
@@ -627,6 +675,13 @@ function App() {
                     disabled={loading}
                   >
                     🖼️ 下载长图
+                  </button>
+                  <button 
+                    onClick={handleDownloadDocx} 
+                    className="action-btn word-btn" 
+                    disabled={loading}
+                  >
+                    📄 导出 Word
                   </button>
                 </div>
 

@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import { generateDiary } from './ai.js';
 import { extractLocationFromImage } from './imageProcessor.js';
 import { saveToFeishu } from './feishu.js';
+import { generateDocx } from './docxGenerator.js'; // 导入 Word 生成器
 
 dotenv.config();
 
@@ -143,6 +144,31 @@ app.post('/api/save-to-feishu', async (req, res) => {
   } catch (error) {
     console.error('飞书保存接口错误:', error);
     res.status(500).json({ error: '保存到飞书失败', message: error.message });
+  }
+});
+
+// 下载 Word 文档接口
+app.post('/api/download-docx', async (req, res) => {
+  try {
+    const { title, date, location, content, photos } = req.body;
+    console.log('收到 Word 导出请求:', { title, date });
+    
+    const buffer = await generateDocx({ 
+      title, 
+      date, 
+      location, 
+      content, 
+      photos, 
+      uploadsDir 
+    });
+
+    const safeTitle = (title || '日记').replace(/[\\/:*?"<>|]/g, '_');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeTitle)}.docx"`);
+    res.send(buffer);
+  } catch (error) {
+    console.error('生成 Word 失败:', error);
+    res.status(500).json({ error: '生成 Word 文档失败' });
   }
 });
 
