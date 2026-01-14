@@ -77,7 +77,6 @@ export async function generateDocx({ title, date, location, content, photos, upl
                     spacing: { before: 200, after: 100 },
                   })
                 );
-                // --- 修复结束 ---
 
                 if (photo.location) {
                   children.push(
@@ -121,59 +120,6 @@ export async function generateDocx({ title, date, location, content, photos, upl
     });
 
     const buffer = await Packer.toBuffer(doc);
-    return buffer;
-  } catch (err) {
-    console.error('docxGenerator 内部错误:', err);
-    throw err;
-  }
-}
-                if (photo.location) {
-                  children.push(
-                    new Paragraph({
-                      alignment: AlignmentType.CENTER,
-                      children: [
-                        new TextRun({ text: `📍 ${photo.location}`, size: 20, color: "4fc3f7" }),
-                      ],
-                      spacing: { after: 200 },
-                    })
-                  );
-                }
-              } catch (err) {
-                console.error('Word插入图片失败:', err);
-              }
-            } else {
-              console.warn('Word生成：图片文件不存在:', localPath);
-            }
-          }
-        } else if (part.trim()) {
-          const lines = part.split('\n');
-          for (const line of lines) {
-            if (line.trim()) {
-              children.push(
-                new Paragraph({
-                  children: [
-                    new TextRun({ text: line.trim(), size: 28 }),
-                  ],
-                  spacing: { after: 150 },
-                })
-              );
-            }
-          }
-        }
-      }
-    }
-
-    // 3. 创建文档
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: children,
-      }],
-    });
-
-    // 4. 打包文档
-    const buffer = await Packer.toBuffer(doc);
-    console.log('Word 文档生成成功，Buffer 长度:', buffer.length);
     return buffer;
   } catch (err) {
     console.error('docxGenerator 内部错误:', err);
