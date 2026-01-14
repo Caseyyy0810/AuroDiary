@@ -30,6 +30,7 @@ function App() {
   const [isUploading, setIsUploading] = useState(false); 
   const [isSavingToFeishu, setIsSavingToFeishu] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
+  const [downloadImageData, setDownloadImageData] = useState(null); // 新增：用于手机端保存图片
   const diaryRef = useRef(null);
 
   const handleManualPhotoChange = (e) => {
@@ -262,11 +263,21 @@ function App() {
       });
       
       const image = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = image;
-      link.download = `日记-${diary.title}-${diary.date}.png`;
-      link.click();
-      setSaveStatus('✅ 长图已保存！');
+      
+      // 检测是否为移动端
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        setDownloadImageData(image);
+        setSaveStatus('✅ 已生成图片，请长按保存');
+      } else {
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `日记-${diary.title}-${diary.date}.png`;
+        link.click();
+        setSaveStatus('✅ 长图已保存！');
+      }
+      
       setTimeout(() => setSaveStatus(''), 3000);
     } catch (err) {
       console.error('生成图片失败:', err);
@@ -539,6 +550,17 @@ function App() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 图片保存模态框 - 仅在手机端生成图片后显示 */}
+      {downloadImageData && (
+        <div className="download-modal" onClick={() => setDownloadImageData(null)}>
+          <div className="download-modal-content" onClick={e => e.stopPropagation()}>
+            <p>长按下方图片保存到手机</p>
+            <img src={downloadImageData} alt="生成的日记长图" className="download-preview-img" />
+            <button className="close-modal-btn" onClick={() => setDownloadImageData(null)}>关闭</button>
           </div>
         </div>
       )}

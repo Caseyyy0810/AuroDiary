@@ -2,12 +2,18 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os'; // 导入 os
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// 与 server/index.js 保持一致的上传目录逻辑
+const uploadsDir = process.env.NODE_ENV === 'production' 
+  ? path.join(os.tmpdir(), 'aurodiary_uploads')
+  : path.join(__dirname, '../uploads');
 
 // 获取飞书 Access Token
 async function getTenantAccessToken() {
@@ -58,11 +64,17 @@ export async function saveToFeishu({ title, date, location, content, photos }) {
     // 1. 先上传所有图片到飞书
     const photoTokens = [];
     for (const photo of photos) {
-      // photo.path 可能是 /uploads/xxx.jpg，需要转为绝对路径
-      const localPath = path.join(__dirname, '..', photo.path);
+      // 从 URL 路径获取文件名
+      const fileName = path.basename(photo.path);
+      const localPath = path.join(uploadsDir, fileName);
+      
+      console.log('尝试上传到飞书的本地路径:', localPath);
+      
       if (fs.existsSync(localPath)) {
         const fileToken = await uploadImageToFeishu(token, localPath);
         photoTokens.push({ file_token: fileToken });
+      } else {
+        console.warn('文件不存在，跳过上传:', localPath);
       }
     }
 
