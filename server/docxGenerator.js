@@ -47,34 +47,33 @@ export async function generateDocx({ title, date, location, content, photos, upl
                 const imageBuffer = fs.readFileSync(localPath);
                 
                 // 获取图片原始尺寸以计算比例，防止变形
-                let width = 450; // 默认宽度
-                let height = 300; // 默认高度
+                let finalWidth = 400; // 默认宽度
+                let finalHeight = 300; // 默认高度
                 
                 try {
-                  const dims = await exifr.parse(localPath, [
-                    'PixelXDimension', 
-                    'PixelYDimension', 
-                    'ExifImageWidth', 
-                    'ExifImageHeight'
-                  ]);
+                  // 尝试获取尺寸数据
+                  const dims = await exifr.parse(localPath, true);
                   
-                  const originalWidth = dims?.PixelXDimension || dims?.ExifImageWidth || 0;
-                  const originalHeight = dims?.PixelYDimension || dims?.ExifImageHeight || 0;
+                  // exifr 在某些格式下返回不同的字段，我们要多方检查
+                  const originalWidth = dims?.ExifImageWidth || dims?.PixelXDimension || dims?.ImageWidth || 0;
+                  const originalHeight = dims?.ExifImageHeight || dims?.PixelYDimension || dims?.ImageHeight || 0;
                   
-                  if (originalWidth && originalHeight) {
+                  if (originalWidth > 0 && originalHeight > 0) {
                     const ratio = originalHeight / originalWidth;
-                    // 以最大宽度 450px 为基准
-                    width = 450;
-                    height = Math.round(width * ratio);
+                    // 以 Word 页面常用宽度 450 为基准
+                    finalWidth = 450;
+                    finalHeight = Math.round(finalWidth * ratio);
                     
-                    // 如果高度太长（比如竖屏长图），限制一下高度
-                    if (height > 600) {
-                      height = 600;
-                      width = Math.round(height / ratio);
+                    // 如果高度太夸张（比如超长手机截图），进行二次限制
+                    if (finalHeight > 600) {
+                      finalHeight = 600;
+                      finalWidth = Math.round(finalHeight / ratio);
                     }
                   }
+                  console.log(`图片尺寸识别成功: ${originalWidth}x${originalHeight} -> 适配为: ${finalWidth}x${finalHeight}`);
                 } catch (sizeErr) {
-                  console.warn('获取图片尺寸失败，使用默认大小:', sizeErr);
+                  console.warn('获取图片尺寸失败，使用默认大小:', sizeErr.message);
+                  // 失败了保持 400x300 的默认值，保证图片不消失
                 }
 
                 children.push(
@@ -84,8 +83,8 @@ export async function generateDocx({ title, date, location, content, photos, upl
                       new ImageRun({
                         data: imageBuffer,
                         transformation: {
-                          width: width,
-                          height: height,
+                          width: finalWidth,
+                          height: finalHeight,
                         },
                       }),
                     ],
